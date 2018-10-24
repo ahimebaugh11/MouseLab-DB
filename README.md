@@ -41,7 +41,7 @@ Create a GUI for interacting with the database<br>
 This database, provided by MySQL, can serve as a guide for downloading, installing, and setting up our MySQL database. There is extensive documentation available about this relatively large dataset, which may be useful in the future.<br><br>
 
 <b><a href="https://github.com/samtools/htsjdk/blob/master/src/main/java/htsjdk/variant/variantcontext/Genotype.java">GenotypeBuilder</a></b> (freely available, open source)<br>
-This class and its corresponding “Genotype” and “Allele” classes provide a comprehensive way of storing genetic information. Though these classes have many more methods than we would need, we may use their code structure while writing our own classes.<br><br>
+This class and its corresponding “Genotype” and “Allele” classes provide a comprehensive way of storing genetic information. Though these classes have many more methods than we would need, we may use their code structure while writing our own classes.<br>
 
 <b><a href="https://firebase.google.com/docs/auth/web/start">Firebase Authentication</a></b> (freely available, closed source)<br>
 This is a service provided by Google which allows websites to use Google’s authentication services to verify user identity. This requires all users using MouseLab DB to have a Google account, but we believe this is a reasonable expectation.

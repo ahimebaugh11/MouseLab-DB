@@ -48,6 +48,20 @@ public class Mouse {
         this.mother = mother;
         this.father = father;
     }
+    
+    /**
+     * Constructs a copy of a given mouse. New copies are created of every field.
+     * @param other a fully initialized mouse to copy
+     */
+    Mouse(Mouse other){
+        this.ID = other.getID();
+        this.sex = other.getSex();
+        this.birthday = (Date)other.getBirthday().clone();
+        this.status = other.getStatusInt();
+        this.mother = new Mouse(other.getMother());
+        this.father = new Mouse(other.getFather());
+        this.father = new Genotype(other.getGenotype());
+    }
 
     //Accessor methods
     /**
@@ -85,6 +99,16 @@ public class Mouse {
             case 4: return "Dead";
             default: throw new RuntimeException("This mouse's status has not been initialized");
         }
+    }
+    /**
+     * Gets this mouse's status integer
+     * @return the mouse's status integer
+     * @throws RuntimeException if the mouse's status was never initialized
+     */
+    public int getStatusInt() throws RuntimeException{
+        if(this.status<0)
+            throw new RuntimeException("This mouse's status has not been initialized");
+        return status;
     }
     /**
      * Gets this mouse's mother. If the birth mother is unknown, returns <code>null</code>.
@@ -220,6 +244,17 @@ public class Mouse {
         this.genotype = genotype;
     }
 
+    /**
+     * Calculates the mouse's age in weeks
+     * @return the mouse's age in weeks
+     */
+    public int getAge(){
+        Date today = new Date();
+        long age = today.getTime() - this.birthday.getTime();
+        long milliSecInWeek = 604800000;
+        return (int)(age/milliSecInWeek);
+    }
+    
     /**
      * Tests to see if the two mice have the same genotype
      * @param otherMouse the mouse to test against

@@ -1,8 +1,13 @@
 import java.util.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 public class mouseDBAccessor {
-
-    public void viewMouse(){
+	
+    public void viewMouse() throws SQLException{
 
         Scanner input = new Scanner(System.in);
         String filter;
@@ -10,7 +15,7 @@ public class mouseDBAccessor {
         System.out.println("Please select the parameter(s) you would like to search by:");
         System.out.println();
         System.out.println("=====================================================");
-        System.out.println("1. Name");
+        System.out.println("1. Alphanumerical ID");
         System.out.println("2. Genotype");
         System.out.println("3. Strain");
         System.out.println("4. JUST EXAMPLES HERE, CAN BE FILLED WITH WHATEVER WE NEED");
@@ -23,6 +28,9 @@ public class mouseDBAccessor {
              System.out.println();
 
             //access the mysql server given the specified name, return the correct mouse here
+             if(searchByAID(filter))
+            	 System.out.println(filter + " exists.");
+             else System.out.println(filter + " doesn't exist.");
 
         }
 
@@ -43,24 +51,44 @@ public class mouseDBAccessor {
 
         }
     }
+    
+    public boolean searchByAID(String item) throws SQLException {
+    	String sql = "SELECT id_an FROM mouselab";
+		
+		try (
+				Connection con = mouseDBconnect.getConnection();
+				Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				ResultSet rs = stmt.executeQuery(sql);
+				)
+			{
+				rs.beforeFirst();
+				boolean exists = false;
+				
+				while (rs.next()) {
+					if (rs.getString("id_an").equalsIgnoreCase(item))
+						exists = true;
+				}
+				
+				if (exists)	return true;
+				else return false; //mouse doesn't exist
+			}
+    }
 
 
-    public void addMouse(){
+    public void addMouse() throws SQLException {
 
         boolean goer = true;
         Scanner input = new Scanner(System.in);
         String[] data =  new String[10];
-        String[] dataLabels =  new String[10];
-        dataLabels[0] = "Name: ";
-        dataLabels[1] = "Date: ";
-        dataLabels[2] = "EXAMPLE: ";
-        dataLabels[3] = "EXAMPLE: ";
-        dataLabels[4] = "EXAMPLE: ";
-        dataLabels[5] = "EXAMPLE: ";
-        dataLabels[6] = "EXAMPLE: ";
-        dataLabels[7] = "EXAMPLE: ";
-        dataLabels[8] = "EXAMPLE: ";
-        dataLabels[9] = "EXAMPLE: ";
+        String[] dataLabels =  new String[8];
+        dataLabels[0] = "Alphanumerical ID: ";
+        dataLabels[1] = "Sex (m/f): ";
+        dataLabels[2] = "Date of Birth (mm/dd/yyyy): ";
+        dataLabels[3] = "Date of Death (mm/dd/yyyy): ";
+        dataLabels[4] = "Status (int 0-4): ";
+        dataLabels[5] = "Mother (A/ID): ";
+        dataLabels[6] = "Father (A/ID): ";
+        dataLabels[7] = "Genotype: ";
 
         do {
             String decision;
@@ -68,7 +96,7 @@ public class mouseDBAccessor {
             System.out.println();
             System.out.println("=====================================================");
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 8; i++) {
                 System.out.print(dataLabels[i]);
                 data[i] = input.nextLine();
                 System.out.println();
@@ -76,7 +104,7 @@ public class mouseDBAccessor {
 
             System.out.println("=====================================================");
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 8; i++) {
                 System.out.println(dataLabels[i] + data[i]);
             }
             System.out.println("=====================================================");
@@ -85,6 +113,20 @@ public class mouseDBAccessor {
             if (decision.equals("Y") || decision.equals("y")) {
                 goer = false;
                 //INSERT CODE FOR ADDING NEW MOUSE TO MYSQL, CAN PASS THE ARRAY "data" TO FILL FIELDS
+                
+                String sql = "INSERT INTO mouselab(id_an, sex, dob, dod, status, mother, father, genotype) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+    			
+    			try (
+    					Connection conn = mouseDBconnect.getConnection();
+    					PreparedStatement stmt = conn.prepareStatement(sql);
+    					)
+    				{
+    					for (int i = 0; i < 8; i++) {
+    						stmt.setString(i+1, data[i]);
+    					}
+    					stmt.execute();
+    				}
+                
             }
             else if (decision.equals("N") || decision.equals("n")){
                 //LOOPS AGAIN

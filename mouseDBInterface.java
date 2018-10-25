@@ -1,7 +1,8 @@
+import java.sql.SQLException;
 import java.util.*;
 public class mouseDBInterface {
 
-    public void menu() {
+    public void menu() throws SQLException {
         mouseDBAccessor acc = new mouseDBAccessor();
         Scanner kb = new Scanner(System.in);
         String input;

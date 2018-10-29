@@ -28,9 +28,7 @@ public class mouseDBAccessor {
              System.out.println();
 
             //access the mysql server given the specified name, return the correct mouse here
-             if(searchByAID(filter))
-            	 System.out.println(filter + " exists.");
-             else System.out.println(filter + " doesn't exist.");
+             searchByAID(filter);
 
         }
 
@@ -52,8 +50,8 @@ public class mouseDBAccessor {
         }
     }
     
-    public boolean searchByAID(String item) throws SQLException {
-    	String sql = "SELECT id_an FROM mouselab";
+    public void searchByAID(String item) throws SQLException {
+    	String sql = "SELECT * FROM mouselab";
 		
 		try (
 				Connection con = mouseDBconnect.getConnection();
@@ -62,15 +60,23 @@ public class mouseDBAccessor {
 				)
 			{
 				rs.beforeFirst();
-				boolean exists = false;
+				int count = 0;
 				
 				while (rs.next()) {
-					if (rs.getString("id_an").equalsIgnoreCase(item))
-						exists = true;
+					if (rs.getString("id_an").equalsIgnoreCase(item)) {
+						System.out.println("ID: " + rs.getString("id_an") + 
+								"\tSex: " + rs.getString("sex") +
+								"\tDay of Birth: " + rs.getString("dob") +
+								"\tDay of Death: " + rs.getString("dod") +
+								"\tStatus: " + rs.getString("status") +
+								"\tMother: " + rs.getString("mother") +
+								"\tFather: " + rs.getString("father") +
+								"\tGenotype: " + rs.getString("genotype"));
+						count++;
+					}
 				}
 				
-				if (exists)	return true;
-				else return false; //mouse doesn't exist
+				if (count == 0) System.out.println("No mouse has that Alphanumerical ID.");
 			}
     }
 

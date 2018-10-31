@@ -24,11 +24,11 @@ public class mouseDBAccessor {
         filter = input.nextLine();
         if(filter.equals("1")){
             System.out.print("Please enter the name you wish to search:");
-             filter = input.nextLine();
-             System.out.println();
+            filter = input.nextLine();
+            System.out.println();
 
             //access the mysql server given the specified name, return the correct mouse here
-             searchByAID(filter);
+            searchByAID(filter);
 
         }
 
@@ -127,8 +127,7 @@ public class mouseDBAccessor {
                 System.out.println("Error");
             }
 
-            /*
-	    //splits deathdate into month, day & checks
+            //splits deathdate into month, day & checks
             String[] deathdateSplit = data[3].split("/");
             int deathdateMonth = Integer.parseInt(deathdateSplit[0]);
             int deathdateDay = Integer.parseInt(deathdateSplit[1]);
@@ -144,7 +143,7 @@ public class mouseDBAccessor {
                     birthdateDay  <= deathdateDay &&
                     birthdateYear <= deathdateYear)){
                 System.out.println("Error");
-            }*/
+            }
 
             //checks mouse status
             int mouseStatus = Integer.parseInt(data[4]);
@@ -187,6 +186,14 @@ public class mouseDBAccessor {
         }while(goer);
     }
     public void deleteMouse(){
+
+        Scanner input = new Scanner(System.in);
+        String filter;
+
+        System.out.println("Please enter the alphanumerical ID of the mouse you wish to delete");
+
+        filter = input.nextLine();
+        //MYSQL code goes here
 
     }
 }

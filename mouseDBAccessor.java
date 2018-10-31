@@ -127,7 +127,8 @@ public class mouseDBAccessor {
                 System.out.println("Error");
             }
 
-            //splits deathdate into month, day & checks
+            /*
+	    //splits deathdate into month, day & checks
             String[] deathdateSplit = data[3].split("/");
             int deathdateMonth = Integer.parseInt(deathdateSplit[0]);
             int deathdateDay = Integer.parseInt(deathdateSplit[1]);
@@ -143,7 +144,7 @@ public class mouseDBAccessor {
                     birthdateDay  <= deathdateDay &&
                     birthdateYear <= deathdateYear)){
                 System.out.println("Error");
-            }
+            }*/
 
             //checks mouse status
             int mouseStatus = Integer.parseInt(data[4]);

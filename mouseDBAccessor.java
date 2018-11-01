@@ -16,9 +16,6 @@ public class mouseDBAccessor {
         System.out.println();
         System.out.println("=====================================================");
         System.out.println("1. Alphanumerical ID");
-        System.out.println("2. Genotype");
-        System.out.println("3. Strain");
-        System.out.println("4. JUST EXAMPLES HERE, CAN BE FILLED WITH WHATEVER WE NEED");
         System.out.println("=====================================================");
 
         filter = input.nextLine();
@@ -29,28 +26,106 @@ public class mouseDBAccessor {
 
             //access the mysql server given the specified name, return the correct mouse here
             searchByAID(filter);
-
-        }
-
-        else if(filter.equals("2")){
-            System.out.print("Please enter the genotype you wish to search:");
-            filter = input.nextLine();
-            System.out.println();
-
-            //access the mysql server given the specified genotype, return any mice with this specific genotype
-
-
-        }
-        else if(filter.equals("3")){
-            System.out.println("Please enter the strain you wish to search:");
-            filter = input.nextLine();
-            System.out.println();
-            //access the mysql server given the specified strain, return any mice of this specific strain
+            if (mouseExists(filter)) {
+            	String mouse = filter;
+            	System.out.println("Do you wish to:");
+            	System.out.println("1. Update this mouse");
+            	System.out.println("2. Show all mouses with the same Date of Birth");
+            	System.out.println("3. Show siblings");
+            	System.out.println("4. Go back to menu");
+            	
+            	filter = input.nextLine();
+            	if (filter.equals("1")) updateMouse(mouse);
+            //	if (filter.equals("2")) searchByDOB(mouse);
+            //	if (filter.equals("3")) searchSiblings(mouse);
+            }
 
         }
     }
     
-    public void searchByAID(String item) throws SQLException {
+    public void updateMouse(String mouse) throws SQLException{
+    	boolean goer = true;
+        Scanner input = new Scanner(System.in);
+        String[] data =  new String[10];
+        String[] dataLabels =  new String[8];
+        dataLabels[0] = "Alphanumerical ID: ";
+        dataLabels[1] = "Sex (m/f): ";
+        dataLabels[2] = "Date of Birth (mm/dd/yyyy): ";
+        dataLabels[3] = "Date of Death (mm/dd/yyyy): ";
+        dataLabels[4] = "Status (int 0-4): ";
+        dataLabels[5] = "Mother (A/ID): ";
+        dataLabels[6] = "Father (A/ID): ";
+        dataLabels[7] = "Genotype: ";
+
+        do {
+            String decision;
+            System.out.println("Please input the data needed to update the mouse. Simply press enter if you do not want to update that field.");
+            System.out.println();
+            System.out.println("=====================================================");
+
+            for (int i = 0; i < 8; i++) {
+                System.out.print(dataLabels[i]);
+                data[i] = input.nextLine();
+                System.out.println();
+            }
+            
+            for (int i = 0; i < 8; i++) {
+                System.out.println(dataLabels[i] + data[i]);
+            }
+            System.out.println("=====================================================");
+            System.out.println("Is this data correct? Y/N");
+            decision = input.nextLine();
+            if (decision.equals("Y") || decision.equals("y")) {
+                goer = false;
+                //INSERT CODE FOR ADDING NEW MOUSE TO MYSQL, CAN PASS THE ARRAY "data" TO FILL FIELDS
+                
+                String sql = "SELECT * FROM mouselab";
+    			
+    			try (
+    					Connection con = mouseDBconnect.getConnection();
+    					Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+    					ResultSet rs = stmt.executeQuery(sql);
+    					)
+    				{
+    					rs.beforeFirst();
+    					while (rs.next()) {
+    						
+    						rs.getInt("id");
+    						if (rs.getString("id_an").equalsIgnoreCase(mouse)) {
+    							
+    							if (!(data[0].equals("")))
+    								rs.updateString("id_an", data[0]);
+    							if (!(data[1].equals("")))
+    								rs.updateString("sex", data[1]);
+    							if (!(data[2].equals("")))
+    								rs.updateString("dob", data[2]);
+    							if (!(data[3].equals("")))
+    								rs.updateString("dod", data[3]);
+    							if (!(data[4].equals("")))
+    								rs.updateString("status", data[4]);
+    							if (!(data[5].equals("")))
+    								rs.updateString("mother", data[5]);
+    							if (!(data[6].equals("")))
+    								rs.updateString("father", data[6]);
+    							if (!(data[7].equals("")))
+    								rs.updateString("genotype", data[7]);
+    							
+    							rs.updateRow(); //looks for 'id'
+    							System.out.println("You successfully updated this mouse!");
+    						
+    						}
+    					
+    					}
+    				}
+                
+            }
+            else if (decision.equals("N") || decision.equals("n")){
+                //LOOPS AGAIN
+            }
+        } while(goer);
+    }
+    
+    public void searchByAID(String mouse) throws SQLException {
     	String sql = "SELECT * FROM mouselab";
 		
 		try (
@@ -63,7 +138,7 @@ public class mouseDBAccessor {
 				int count = 0;
 				
 				while (rs.next()) {
-					if (rs.getString("id_an").equalsIgnoreCase(item)) {
+					if (rs.getString("id_an").equalsIgnoreCase(mouse)) {
 						System.out.println("ID: " + rs.getString("id_an") + 
 								"\tSex: " + rs.getString("sex") +
 								"\tDay of Birth: " + rs.getString("dob") +
@@ -185,15 +260,57 @@ public class mouseDBAccessor {
 
         }while(goer);
     }
-    public void deleteMouse(){
+    public void deleteMouse() throws SQLException {
 
         Scanner input = new Scanner(System.in);
         String filter;
 
-        System.out.println("Please enter the alphanumerical ID of the mouse you wish to delete");
-
-        filter = input.nextLine();
+        do {
+        	System.out.println("Please enter the alphanumerical ID of the mouse you wish to delete");
+        	filter = input.nextLine();
+        } while (!mouseExists(filter));
+        
         //MYSQL code goes here
+        
+        String sql = "DELETE FROM mouselab WHERE (id_an = ?)";
+		
+		try (
+				Connection conn = mouseDBconnect.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				)
+		{
+			stmt.setString(1, filter);
+			stmt.execute();
+			System.out.println(filter + " was successfully deleted.");
+		}
 
     }
+    
+	public static boolean mouseExists(String mouse) throws SQLException {
+			
+			String sql = "SELECT * FROM mouselab";
+				
+				try (
+						Connection con = mouseDBconnect.getConnection();
+						Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+						ResultSet rs = stmt.executeQuery(sql);
+						)
+					{
+						rs.beforeFirst();
+						boolean exists = false;
+						
+						while (rs.next()) {
+							
+							if (rs.getString("id_an").equals(mouse)) {
+								//mouse exists
+								exists = true;
+							}
+						
+						}
+						
+						if (exists) return true;
+						else return false; //course doesn't exist
+					}
+		
+		}
 }

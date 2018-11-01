@@ -7,7 +7,7 @@ public class mouseDBInterface {
         Scanner kb = new Scanner(System.in);
         String input;
 
-
+        System.out.println();
         System.out.println("Welcome to the MouseLab DB Program");
         System.out.println();
         System.out.println("=====================================================");

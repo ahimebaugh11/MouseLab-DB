@@ -180,7 +180,6 @@ public class mouseDBAccessor {
             for (int i = 0; i < 8; i++) {
                 System.out.print(dataLabels[i]);
                 data[i] = input.nextLine();
-                System.out.println();
             }
 
             //check user input
@@ -201,32 +200,12 @@ public class mouseDBAccessor {
             else if (!(birthdateDay <= 31 && birthdateDay > 0)){
                 System.out.println("Error");
             }
-
-            //splits deathdate into month, day & checks
-            String[] deathdateSplit = data[3].split("/");
-            int deathdateMonth = Integer.parseInt(deathdateSplit[0]);
-            int deathdateDay = Integer.parseInt(deathdateSplit[1]);
-            int deathdateYear = Integer.parseInt(deathdateSplit[2]);
-            if (!(deathdateMonth <= 12 && deathdateMonth > 0)){
-                System.out.println("Error");
-            }
-            else if (!(deathdateDay <= 31 && deathdateDay > 0)){
-                System.out.println("Error");
-            }
-
-            if (!(birthdateMonth <= deathdateMonth &&
-                    birthdateDay  <= deathdateDay &&
-                    birthdateYear <= deathdateYear)){
-                System.out.println("Error");
-            }
-
+		
             //checks mouse status
             int mouseStatus = Integer.parseInt(data[4]);
             if (!(mouseStatus <= 4)){
                 System.out.println("Error");
             }
-
-
 
             System.out.println("=====================================================");
 
@@ -311,6 +290,5 @@ public class mouseDBAccessor {
 						if (exists) return true;
 						else return false; //course doesn't exist
 					}
-		
 		}
 }

@@ -13,10 +13,10 @@ public class mouseDBAccessor {
         String filter;
 
         System.out.println("Please select the parameter(s) you would like to search by:");
-        System.out.println();
-        System.out.println("=====================================================");
         System.out.println("1. Alphanumerical ID");
-        System.out.println("=====================================================");
+        System.out.println("2. Birthday");
+        System.out.println("3. Parent");
+        System.out.println("4. Genotype");
 
         filter = input.nextLine();
         if(filter.equals("1")){
@@ -25,21 +25,45 @@ public class mouseDBAccessor {
             System.out.println();
 
             //access the mysql server given the specified name, return the correct mouse here
-            searchByAID(filter);
+            search(filter, "id_an");
             if (mouseExists(filter)) {
             	String mouse = filter;
-            	System.out.println("Do you wish to:");
-            	System.out.println("1. Update this mouse");
-            	System.out.println("2. Show all mouses with the same Date of Birth");
-            	System.out.println("3. Show siblings");
-            	System.out.println("4. Go back to menu");
+            	System.out.println("Do you wish to update this mouse? (y/n)");
             	
             	filter = input.nextLine();
-            	if (filter.equals("1")) updateMouse(mouse);
-            //	if (filter.equals("2")) searchByDOB(mouse);
-            //	if (filter.equals("3")) searchSiblings(mouse);
+            	if (filter.equalsIgnoreCase("y")) updateMouse(mouse);
             }
 
+        }
+        
+        if(filter.equals("2")){
+            System.out.print("Please enter the birthday you wish to search:");
+            filter = input.nextLine();
+            System.out.println();
+
+            //access the mysql server given the specified name, return the correct mouse here
+            search(filter, "dob");
+
+        }
+        
+        if(filter.equals("3")){
+            System.out.print("Do you wish to search by mother or father? (m/f)");
+            String temp = input.nextLine();
+            if (temp.equalsIgnoreCase("m"))
+            	temp = "mother";
+            else if (temp.equalsIgnoreCase("f"))
+            	temp = "father";
+            System.out.print("Please enter the Alphanumerical ID:");
+            filter = input.nextLine();
+            System.out.println();
+            search(filter, temp);
+
+        }
+        
+        if(filter.equals("4")){
+            System.out.print("Please enter genotype below:");
+            System.out.println();
+            search(Genotype.buildGenotype(), "genotype");
         }
     }
     
@@ -60,11 +84,22 @@ public class mouseDBAccessor {
         do {
             String decision;
             System.out.println("Please input the data needed to update the mouse. Simply press enter if you do not want to update that field.");
-            System.out.println();
-            System.out.println("=====================================================");
 
             for (int i = 0; i < 8; i++) {
                 System.out.print(dataLabels[i]);
+                if (i == 7) {
+                	System.out.println("");
+                	String gen;
+                	do {
+	                	System.out.println("Do you wish to update the Genotype? (y/n)");
+	                	gen = input.nextLine();
+                	} while (!(gen.equalsIgnoreCase("y")) && !(gen.equalsIgnoreCase("n")));
+                	
+                	if (gen.equalsIgnoreCase("y")) {
+                		data[7] = Genotype.buildGenotype();
+                	}
+                }
+                else
                 data[i] = input.nextLine();
                 System.out.println();
             }
@@ -125,7 +160,7 @@ public class mouseDBAccessor {
         } while(goer);
     }
     
-    public void searchByAID(String mouse) throws SQLException {
+    public void search(String mouse, String field) throws SQLException {
     	String sql = "SELECT * FROM mouselab";
 		
 		try (
@@ -138,7 +173,7 @@ public class mouseDBAccessor {
 				int count = 0;
 				
 				while (rs.next()) {
-					if (rs.getString("id_an").equalsIgnoreCase(mouse)) {
+					if (rs.getString(field).equalsIgnoreCase(mouse)) {
 						System.out.println("ID: " + rs.getString("id_an") + 
 								"\tSex: " + rs.getString("sex") +
 								"\tDay of Birth: " + rs.getString("dob") +
@@ -146,12 +181,12 @@ public class mouseDBAccessor {
 								"\tStatus: " + rs.getString("status") +
 								"\tMother: " + rs.getString("mother") +
 								"\tFather: " + rs.getString("father") +
-								"\tGenotype: " + rs.getString("genotype"));
+								"\tGenotype: " + Genotype.toString(rs.getString("genotype")));
 						count++;
 					}
 				}
 				
-				if (count == 0) System.out.println("No mouse has that Alphanumerical ID.");
+				if (count == 0) System.out.println("No such mouse exists.");
 			}
     }
 
@@ -174,38 +209,93 @@ public class mouseDBAccessor {
         do {
             String decision;
             System.out.println("Please input the data needed for a new mouse when prompted");
-            System.out.println();
-            System.out.println("=====================================================");
 
             for (int i = 0; i < 8; i++) {
                 System.out.print(dataLabels[i]);
+                if (i == 7) {
+                	System.out.println("");
+                	data[7] = Genotype.buildGenotype();
+                }
+                else
                 data[i] = input.nextLine();
+                System.out.println();
             }
 
             //check user input
             //checks to see if mouse sex is correctly entered & will eliminate all spaces & change to lowercase
             data[1].trim().toLowerCase();
-            if (!(data[1].length() == 1)){
-                System.out.println("Error");
+            while (!(data[1].length() == 1)){
+                System.out.println("Error for sex. Please try again: (m/f)");
+                data[1] = input.nextLine();
             }
 
             //splits birthdate into month, day & checks
-            String[] birthdateSplit = data[2].split("/");
-            int birthdateMonth = Integer.parseInt(birthdateSplit[0]);
-            int birthdateDay = Integer.parseInt(birthdateSplit[1]);
-            int birthdateYear = Integer.parseInt(birthdateSplit[2]);
-            if (!(birthdateMonth <= 12 && birthdateMonth > 0)){
-                System.out.println("Error");
+            while (!checkDate(data[2])) {
+            	System.out.println("Error for the birth date. Please try again: (mm/dd/yyyy)");
+            	data[2] = input.nextLine();
             }
-            else if (!(birthdateDay <= 31 && birthdateDay > 0)){
-                System.out.println("Error");
+
+            //splits deathdate into month, day & checks
+            while (!checkDate(data[3])) {
+            	System.out.println("Error for the death date. Please try again: (mm/dd/yyyy)");
+            	data[3] = input.nextLine();
             }
-		
+         /*   int count;
+            
+            do {
+            	String[] splitDateBirth = data[2].split("/");
+                int dateMonthBirth = Integer.parseInt(splitDateBirth[0]);
+                int dateDayBirth = Integer.parseInt(splitDateBirth[1]);
+                int dateYearBirth = Integer.parseInt(splitDateBirth[2]);
+                
+                String[] splitDateDeath = data[3].split("/");
+                int dateMonthDeath = Integer.parseInt(splitDateDeath[0]);
+                int dateDayDeath = Integer.parseInt(splitDateDeath[1]);
+                int dateYearDeath = Integer.parseInt(splitDateDeath[2]);
+                
+            	count = 0;
+            	
+            	if (dateYearDeath < dateYearBirth) {
+            		count++;
+            		if ((dateMonthDeath < dateMonthBirth) && count == 1) {
+            			count++;
+            			if ((dateDayDeath < dateDayBirth) && count == 2) {
+            				count++;
+            			}
+            		}
+            	}
+            	if (count > 0) {
+            		System.out.println("There is an incoherence with the birth date and death date.");
+            		System.out.println("Please re-enter birth date:");
+            		data[2] = input.nextLine();
+            		while (!checkDate(data[2])) {
+                    	System.out.println("Error for the birth date. Please try again: (mm/dd/yyyy)");
+                    	data[2] = input.nextLine();
+                    }
+            		System.out.println("Please re-enter death date:");
+            		data[3] = input.nextLine();
+            		System.out.println("1");
+            		while (!checkDate(data[3])) {
+                    	System.out.println("Error for the death date. Please try again: (mm/dd/yyyy)");
+                    	data[3] = input.nextLine();
+                    	System.out.println("2");
+                    }
+            		System.out.println("3");
+            		count = 0;
+            	}
+            } while (count >= 1 || count <= 3);*/
+            //input.close();
+            
             //checks mouse status
+            
             int mouseStatus = Integer.parseInt(data[4]);
-            if (!(mouseStatus <= 4)){
-                System.out.println("Error");
+            while ((!(mouseStatus <= 4) || !(mouseStatus >= 0))){
+            	System.out.println("Error for status. Please try anything between 1-4:");
+            	data[4] = input.nextLine();
+            	mouseStatus = Integer.parseInt(data[4]);
             }
+
+
 
             System.out.println("=====================================================");
 
@@ -214,6 +304,7 @@ public class mouseDBAccessor {
             }
             System.out.println("=====================================================");
             System.out.println("Is this data correct? Y/N");
+            input = new Scanner(System.in);
             decision = input.nextLine();
             if (decision.equals("Y") || decision.equals("y")) {
                 goer = false;
@@ -230,6 +321,7 @@ public class mouseDBAccessor {
     						stmt.setString(i+1, data[i]);
     					}
     					stmt.execute();
+    					System.out.println("Mouse was added successfully.");
     				}
                 
             }
@@ -238,6 +330,17 @@ public class mouseDBAccessor {
             }
 
         }while(goer);
+    }
+    
+    public boolean checkDate(String temp) throws SQLException {
+    	String[] splitDate = temp.split("/");
+        int dateMonth = Integer.parseInt(splitDate[0]);
+        int dateDay = Integer.parseInt(splitDate[1]);
+        int dateYear = Integer.parseInt(splitDate[2]);
+        while (!(dateMonth <= 12 && dateMonth > 0) || !(dateDay <= 31 && dateDay > 0)){
+            return false; //wrong date
+        }
+        return true; //correct date
     }
     public void deleteMouse() throws SQLException {
 
@@ -249,19 +352,25 @@ public class mouseDBAccessor {
         	filter = input.nextLine();
         } while (!mouseExists(filter));
         
-        //MYSQL code goes here
-        
-        String sql = "DELETE FROM mouselab WHERE (id_an = ?)";
-		
-		try (
-				Connection conn = mouseDBconnect.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(sql);
-				)
-		{
-			stmt.setString(1, filter);
-			stmt.execute();
-			System.out.println(filter + " was successfully deleted.");
-		}
+        System.out.println("Are you sure you want to delete this mouse? (y/n)");
+        String temp = input.nextLine();
+        if (temp.equalsIgnoreCase("n"))
+        	System.out.println("The mouse won't be deleted.");
+        else if (temp.equalsIgnoreCase("y")) {
+	        //MYSQL code goes here
+	        
+	        String sql = "DELETE FROM mouselab WHERE (id_an = ?)";
+			
+			try (
+					Connection conn = mouseDBconnect.getConnection();
+					PreparedStatement stmt = conn.prepareStatement(sql);
+					)
+			{
+				stmt.setString(1, filter);
+				stmt.execute();
+				System.out.println(filter + " was successfully deleted.");
+			}
+        }
 
     }
     
@@ -290,5 +399,6 @@ public class mouseDBAccessor {
 						if (exists) return true;
 						else return false; //course doesn't exist
 					}
+		
 		}
 }
